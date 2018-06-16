@@ -1,0 +1,113 @@
+echo "var memberRegistryCode = `solc --combined-json abi,bin,interface memberRegistry.sol`" > memberRegistry.js
+docker exec -it `docker ps -l -q` geth --jspath "/root/.ethereum/" attach /root/.ethereum/geth.ipc
+
+
+//loadScript("/root/.ethereum/js/new_miner.js")
+
+loadScript("/root/.ethereum/memberRegistry.js")
+var memberRegistryContract = web3.eth.contract(JSON.parse(memberRegistryCode.contracts['memberRegistry.sol:memberRegistry'].abi))
+web3.eth.defaultAccount = eth.coinbase
+eth.accounts.map(function(x) {personal.unlockAccount(x,"")})
+
+var memberRegistry = memberRegistryContract.new({
+	from:eth.coinbase,data:"0x"+ memberRegistryCode.contracts['memberRegistry.sol:memberRegistry'].bin, gas: 3000000}, 
+	function(e, contract){
+if(!e) {
+	if(!contract.address) {
+    	console.log("Contrat initialized...\nTransactionHash: " + contract.transactionHash + "\nWaiting to be mined...\n");
+  	} else {
+    	console.log("Contract mined! Address: " + contract.address);
+  	}
+  	} else {
+	console.log(e);
+	}     
+})
+
+
+miner.start()
+miner.stop()
+
+memberRegistry.members("3").map(function(x) {return web3.toAscii(x)})
+
+addMember(bytes _fname, bytes _lname)
+
+1.Location/Content
+2.Data
+3.Content
+
+integer --> pad left
+bytes --> pad right
+bool --> pad left
+
+sam(bytes,bool,uint256[])
+("dave", 1, [1,2,3])
+
+memberRegistry.addMember("Amadou","Youssef")
+32 bytes --> 32*2 characters
+
+//data part = the length of the byte array in elements, padded to the left
+//content part
+location1 + location2 + datapart1 + content1 + datapart2 + content2
+
+addMember(bytes,bytes)
+("Amadou","Youssef") ---> L1,D1,C1,L2,D2,C2
+
+//function(string, chars, sign)
+
+#making data
+#1.take first 4 bytes (32 bit, ou 8 character) of sha3 of "addMember(bytes,bytes)"
+"0x" + 
+web3.sha3('addMember(bytes,bytes)').slice(2, 10)
+#("Amadou","Youssef") ---> L1,L2,D1,C1,D2,C2
+web3.padLeft(web3.toHex(32*2).slice(2),64,"0")
+web3.padLeft(web3.toHex(32*4).slice(2),64,"0")
+web3.padLeft(web3.toHex(6).slice(2),64,"0")
+web3.padRight(web3.toHex("Amadou").slice(2),64,"0")
+web3.padLeft(web3.toHex(7).slice(2),64,"0")
+web3.padRight(web3.toHex("Youssef").slice(2),64,"0")
+=
+
+
+var data = "0x"+web3.sha3('addMember(bytes,bytes)').slice(2, 10)+web3.padLeft(web3.toHex(32*2).slice(2),64,"0")+web3.padLeft(web3.toHex(32*4).slice(2),64,"0")+web3.padLeft(web3.toHex(6).slice(2),64,"0")+web3.padRight(web3.toHex("Amadou").slice(2),64,"0")+web3.padLeft(web3.toHex(7).slice(2),64,"0")+web3.padRight(web3.toHex("Youssef").slice(2),64,"0")
+
+
+
+curl 0.0.0.0:8545 -X POST --data '{"jsonrpc":"2.0","method": "eth_sendTransaction", "params": [{"from": coinbase, "to": "0x5f2c376a038ec222cee44bf2b80dc8733171b03d", "data": data}], "id": 1}'
+
+
+
+
+
+{
+	'jsonrpc': '2.0',
+	'id' : 1,
+	'method': 'eth_call',
+	'params' : [ { 
+		'to' : "0x5f2c376a038ec222cee44bf2b80dc8733171b03d",
+	 'data' : data
+	 } ]
+};
+
+
+#get transaction data
+Block Number = eth.getTransaction($TransactionHash).blockNumber
+Member = eth.getTransaction($TransactionHash).from
+Transaction ID = eth.getTransaction($TransactionHash).hash
+Transation Type = xeth.getTransaction($TransactionHash).to
+
+JSON.constructor({"Name":"Amadou, Youssef"})
+
+
+#testing sm
+
+kdastr.createParcel(32,-76,"Commercial")
+
+kdastr.newParticipant (personal.newAccount(""), "Paul, John", 0)
+
+web3.toAscii(kdastr.participant("0x9f758dd74c1d6fafa4e4294147172ee987f41194")[0])
+
+
+lat:"45.502617"
+long:"-73.59269"
+address:"1260 Chemin Remembrance, Montréal, QC H3H 1A2, Canada"
+

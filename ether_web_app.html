@@ -1,0 +1,204 @@
+<!doctype>
+<html>
+<head>
+<script type="text/javascript" src="/Users/youssefamadou/Library/EthereumTest/js/web3.js/dist/web3.js"></script>
+<script type="text/javascript">
+
+	var Web3 = require('web3');
+    var web3 = new Web3();
+    web3.setProvider(new Web3.providers.HttpProvider('http://0.0.0.0:8545'));
+    var coinbase = web3.eth.coinbase;
+    
+    //eth.accounts.map(function(x) {personal.unlockAccount(x,"")})
+    var contractAddress = "0xd0200d3e1d08fe494470c4cb52532f7429cd9c1a";
+    
+    /*
+    var memberRegistryAbi = memberRegistryContract.abi;
+	var memberRegistry = web3.eth.contract(memberRegistryAbi);
+	var memberRegistry = MemberRegistry.at(contractAddress);
+	var newMemberEvent = MemberRegistry.at().newMember();
+	newMemberEvent.watch(function(error, result){
+    	if (!error)
+        	console.log("New member triggered!");
+	});
+	*/
+
+    
+    /*
+        document.getElementById('status').innerText = "Tansaction submitted! Waiting for confirmation...";
+        web3.eth.contract(abi).new({data: code}, function (err, contract) {
+            if (err) {
+                console.error(err);
+                return;
+
+            // callback fires twice, we only want the second call when the contract is deployed
+            } else if(contract.address){
+
+                myContract = contract;
+                console.log('address: ' + myContract.address);
+
+                document.getElementById('status').innerText = 'Mined!';
+                document.getElementById('call').style.visibility = 'visible';
+            }
+        });
+
+    */
+        
+</script>
+</head>
+<body>
+	<h1>DLTA Immochain (demo app)</h1>
+	<h2>Create a member</h2>
+    <div id='register_form'>
+    	<form action="/my-handling-form-page" method="post">
+    		<div>First name: <input type="text" id="first_name" name="firstname"></div>
+    		<div>Last name: <input type="text" id="last_name" name="lastname"></div>
+    	</form>
+    </div>
+    <div id='add'>
+        <button type="button" onClick="addMember();">Add member</button>
+    </div>
+    <br>
+    <br>
+    <div id='status'></div>
+    <br>
+    <br>
+
+    <!-- <span><button type="button" onClick="mineStart();">Start Mining</button></span><span><button type="button" onClick="mineStop();">Stop Mining</button></span> -->
+
+	<br>
+	<br>
+	<br>
+	
+	
+	
+<footer>
+	Latest Block (<span id='blockNumber' ></span>)
+	<table>
+	<tr>
+		<th align="left">BlockID</th>
+		<td id='blockHash'></td>
+	</tr>
+	<tr>
+		<th align="left">Transactions</th>
+		<td id='blockTxCt'></td>
+	</tr>
+	</table>
+	
+	<!--
+	Latest block data
+	Block Id = web3.eth.getBlock("latest").hash
+	Block Number = web3.eth.getBlock("latest").number
+	Transaction Count = web3.eth.getBlock("latest").transactions.length
+	-->
+	
+	<!--
+	Transaction history data
+	Transaction Id = eth.getTransaction($TransactionHash).hash
+	Update Type = eth.getTransaction($TransactionHash).to (smart contract)
+	Timestamp = web3.eth.getBlock(eth.getTransaction($TransactionHash).blockNumber).timestamp	
+	-->
+	<br>
+	<br>
+	<p>&copy; DLTA Solutions 2017<p>
+</footer>
+
+<script type="text/javascript" src="/Users/youssefamadou/Library/EthereumTest/js/web3.js/dist/web3.js"></script>
+<script type="text/javascript">
+
+	
+	// Register as member
+    function addMember() {
+		
+        var firstName = document.getElementById('first_name').value;
+        var lastName = document.getElementById('last_name').value;
+		var data = "0x"+web3.sha3('addMember(bytes,bytes)').slice(2, 10)+web3.padLeft(web3.toHex(32*2).slice(2),64,"0")+web3.padLeft(web3.toHex(32*4).slice(2),64,"0")+web3.padLeft(web3.toHex(firstName.length).slice(2),64,"0")+web3.padRight(web3.toHex(firstName).slice(2),64,"0")+web3.padLeft(web3.toHex(lastName.length).slice(2),64,"0")+web3.padRight(web3.toHex(lastName).slice(2),64,"0");
+		
+		web3.eth.sendTransaction({from: coinbase, to: contractAddress, data: data}, 
+			function(err, hash) {
+				if (err) {
+					console.log(err);
+					return;
+				} else {
+					block = web3.eth.getTransaction(hash).blockNumber;
+					var newMemberEvent = web3.eth.filter({fromBlock:0,toBlock:block, address:contractAddress})
+					newMemberEvent.watch(function (error, result) {
+					if (error) {
+						console.log(error);
+					} else {
+						web3.eth.getTransactionReceipt(hash, function(e,receipt){
+    						if (receipt == null) {
+    							document.getElementById('status').innerText = "Transaction submitted! Waiting for confirmation...";
+    						} else {
+    							document.getElementById('status').innerText = "Transaction confirmed: " + hash;    						
+    						}
+        				});					
+						}
+					});
+
+				}
+			}
+		);
+			
+	}
+	
+	function updateBlockFooter(blockX) {
+	    document.getElementById('blockNumber').innerText = blockX.number;
+    	document.getElementById('blockHash').innerText = blockX.hash;
+    	document.getElementById('blockTxCt').innerText = blockX.transactions.length;	
+	}
+	
+	if (!web3.eth.mining) { updateBlockFooter(web3.eth.getBlock("latest")); }
+	
+	web3.eth.filter('latest').watch(function (error, result) {
+		if (error) {
+			console.log(error);
+		} else {
+    		updateBlockFooter(web3.eth.getBlock(result));
+    	}
+    });
+
+
+//eth.mining
+/*
+var minerSwitch = web3.eth.filter({fromBlock:0,toBlock:'pending'})
+minerSwitch.watch( function(error,result) {
+	if (error) { console.log(error);
+	} else {
+		if (!eth.mining && eth.getBlock('pending').transactions.length >= 1) 
+			{ web3.miner.start();
+			} else { web3.miner.stop(); }
+		}
+	}
+);
+*/	
+	
+/*
+	eth.getTransaction("0xbd5d499e7b36133b3fc0cef4ee3894dc9e8ec895383304b968960ee3da05a3d3").input
+
+
+	TxPoolFooter = web3.eth.filter({
+	fromBlock:0,
+	toBlock:'latest',
+	topics: ["0x0947d6ee4c914483108eda279ea09b37152c79c04e4fc0bb0605710978186017"]
+});
+	
+filter.watch(function(error, result) {
+if (!error) console.log("new member");
+});
+
+eth.getBlock('pending').transactions
+
+    address: undefined,
+    from: undefined,
+    fromBlock: undefined,
+    to: undefined,
+    toBlock: undefined,
+    topics: []
+*/
+
+</script>
+
+
+</body>
+</html>
